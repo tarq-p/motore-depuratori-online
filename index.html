@@ -56,7 +56,7 @@
     <div class="filters">
       <label>Cerca nel nome<input id="q" placeholder="nome o via"></label>
       <label>Tipo di attività<select id="ftype"></select></label>
-      <label>Come contattarli<select id="fcontact"><option value="">Tutti (WhatsApp, email, Facebook o telefono)</option><option value="0">Solo con WhatsApp</option><option value="1">Con WhatsApp, email o Facebook</option></select></label>
+      <label>Come contattarli<select id="fcontact"><option value="">Tutti (WhatsApp, email o telefono)</option><option value="0">Solo con WhatsApp</option><option value="1">Con WhatsApp o email</option></select></label>
       <label>Ordina per<select id="fordine"><option value="tipo">Tipo (il tuo ordine), poi punteggio</option><option value="prob">Solo punteggio (dal più alto)</option><option value="canale">Prima WhatsApp, poi email, poi telefono</option></select></label>
       <label style="flex-direction:row;align-items:center;gap:6px;font-weight:600"><input type="checkbox" id="fgia"> Nascondi chi parla già di acqua filtrata o nomina un fornitore</label>
       <label style="flex-direction:row;align-items:center;gap:6px;font-weight:600"><input type="checkbox" id="fdieci" checked> Aziende: solo da 10 dipendenti in su (stima dal nome e dal sito)</label>
@@ -290,12 +290,12 @@ $('go').onclick = async ()=>{
         if(quasi(t).length<4){ const i=t.anche.findIndex(n=>quasi({nome:n}).length>=4); if(i>=0){ const vero=t.anche[i]; t.anche[i]=t.nome; t.nome=vero; } }
       });
       tot-=doppi;
-      let senza=0; Object.values(leads).forEach(l=>{ if(!l.phone&&!l.email&&!fbDi(l)){ delete leads[l.id]; senza++; } });
+      let senza=0; Object.values(leads).forEach(l=>{ if(!l.phone&&!l.email){ delete leads[l.id]; senza++; } });
       tot-=senza; SENZA_CONTATTI=senza;
       let fast=0, forni=0; Object.values(leads).forEach(l=>{ if(fastFood(l)){ delete leads[l.id]; fast++; } else if(fornoPuro(l)){ delete leads[l.id]; forni++; } });
       tot-=fast+forni; TOLTI_FAST=fast; TOLTI_FORNI=forni;
     }
-    $('status').textContent = tot ? `Ho trovato ${tot} attività entro ${R/1000} km da ${g.name}.`+(()=>{ const t=[SENZA_CONTATTI?SENZA_CONTATTI+' senza telefono, email né Facebook':'', TOLTI_FAST?TOLTI_FAST+' fast food, kebab e street food':'', TOLTI_FORNI?TOLTI_FORNI+' panifici e tarallifici':''].filter(Boolean); return t.length?' Ne ho tolte '+t.join(', ')+'.':''; })()
+    $('status').textContent = tot ? `Ho trovato ${tot} attività entro ${R/1000} km da ${g.name}.`+(()=>{ const t=[SENZA_CONTATTI?SENZA_CONTATTI+' senza telefono né email':'', TOLTI_FAST?TOLTI_FAST+' fast food, kebab e street food':'', TOLTI_FORNI?TOLTI_FORNI+' panifici e tarallifici':''].filter(Boolean); return t.length?' Ne ho tolte '+t.join(', ')+'.':''; })()
                                   : 'Nessuna attività trovata: prova ad aumentare i km o a scegliere altri tipi.';
     emptyMsg='Nessuna attività entro '+(R/1000)+' km da '+g.name+' con i tipi scelti. Aumenta i km (massimo 30) o scegli più tipi.';
     autoGiro++; $('autositi').textContent=''; progres(0,0); AUTO_PRONTO=!!tot;
@@ -320,14 +320,7 @@ function waDi(l){
   const cel=numeri(l).map(phoneDigits).find(d=>(isMobileIT(d)||(l.cel||[]).includes(d))&&!NO_WA.has(d));
   return cel?{d:cel, sito:false}:null;
 }
-// Molte pagine Facebook hanno un pulsante WhatsApp o Messenger: il motore non può leggerlo (Meta lo vieta),
-// ma può aprire la pagina e copiare il messaggio pronto, così chi usa il motore lo incolla lì.
-function fbDi(l){
-  const li=locInfo[l.id], cand=[l.soc, l.web, li&&li.social&&li.social.facebook].map(urlSicuro);
-  return cand.find(u=>u && /(^|\.)(facebook\.com|fb\.com|fb\.me)$/.test(hostDi(u))) || '';
-}
-// canale: 0 WhatsApp, 1 email o Facebook (messaggio scritto), 2 solo telefono, 3 niente
-function canale(l){ return waDi(l)?0 : (mailSicura(l.email)||fbDi(l))?1 : numeri(l).length?2 : 3; }
+function canale(l){ return waDi(l)?0 : mailSicura(l.email)?1 : numeri(l).length?2 : 3; }
 function etichettaLink(u){ const h=hostDi(u); return /(^|\.)instagram\.com$|^instagr\.am$/.test(h)?'Instagram' : /(^|\.)(facebook\.com|fb\.com|fb\.me)$/.test(h)?'Facebook' : /(^|\.)tiktok\.com$/.test(h)?'TikTok' : 'Sito'; }
 function fmtTel(t){ let d=String(t||'').replace(/[^\d]/g,''); if(String(t||'').trim().startsWith('00')) d=d.replace(/^00/,'');
   if(d.startsWith('39')&&d.length>=11) d=d.slice(2); else if(!(d.startsWith('3')||d.startsWith('0'))||d.length<6||d.length>11) return t;
@@ -367,11 +360,10 @@ const IC={
   tel:'<svg class="ic" viewBox="0 0 24 24"><path d="M5 4h3.5l1.5 4-2 1.5a11 11 0 0 0 6.5 6.5l1.5-2 4 1.5V19a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg>'
 };
 function actions(l){
-  const out=[], m=msgFor(l), tel=numeri(l)[0]||'', mail=mailSicura(l.email), w=waDi(l), fb=w?'':fbDi(l);
-  if(fb) out.push(`<a class="main" target="_blank" rel="noopener noreferrer" data-fbcopia="${esc(l.id)}" title="Copia il messaggio e apre la pagina Facebook: lì premi WhatsApp o Messenger e incolla" href="${esc(fb)}">${IC.wa}WhatsApp da Facebook</a>`);
+  const out=[], m=msgFor(l), tel=numeri(l)[0]||'', mail=mailSicura(l.email), w=waDi(l);
   if(w) out.push(`<a class="main" target="_blank" rel="noopener noreferrer" title="${w.sito?'Numero WhatsApp preso dal suo sito':'Cellulare dai dati: non si sa se è su WhatsApp'}" href="https://wa.me/${w.d}?text=${encodeURIComponent(m)}">${IC.wa}WhatsApp</a>`);
-  if(mail) out.push(`<a class="${w||fb?'':'main'}" href="mailto:${esc(mail)}?subject=${encodeURIComponent('Acqua per '+l.nome+': sopralluogo gratuito')}&body=${encodeURIComponent(m)}">${IC.mail}Email</a>`);
-  if(tel) out.push(`<a class="${w||fb||mail?'':'main'}" href="tel:${esc(tel.replace(/[^\d+]/g,''))}">${IC.tel}Chiama</a>`);
+  if(mail) out.push(`<a class="${w?'':'main'}" href="mailto:${esc(mail)}?subject=${encodeURIComponent('Acqua per '+l.nome+': sopralluogo gratuito')}&body=${encodeURIComponent(m)}">${IC.mail}Email</a>`);
+  if(tel) out.push(`<a class="${w||mail?'':'main'}" href="tel:${esc(tel.replace(/[^\d+]/g,''))}">${IC.tel}Chiama</a>`);
   return out.join('');
 }
 
@@ -496,22 +488,6 @@ function renderSampleMsgs(){
     return `<div class="msgbox"><b>${esc(TYPES[k].label)}</b><div class="t">${esc(t)}</div><button class="ghost" data-copymsg="${box._msgs.length-1}" style="padding:6px 12px">Copia il messaggio</button></div>`;
   }).join('') || '<div class="small">Scegli almeno un tipo di attività.</div>';
 }
-// copia un testo e dice com'è andata (fatto(true/false)): prima la copia immediata, che funziona anche
-// con la pagina aperta come file, poi quella moderna del browser
-function copiaTesto(t, fatto){
-  let ok=false;
-  try{ const a=document.createElement('textarea'); a.value=t; a.setAttribute('readonly',''); a.style.position='fixed'; a.style.top='-1000px';
-    document.body.appendChild(a); a.focus(); a.select(); ok=document.execCommand('copy'); a.remove(); }catch(e){ ok=false; }
-  if(ok) return fatto(true);
-  if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(()=>fatto(true), ()=>fatto(false));
-  else fatto(false);
-}
-document.addEventListener('click',e=>{ const a=e.target.closest('[data-fbcopia]'); if(!a) return;
-  const l=leads[a.dataset.fbcopia]; if(!l) return;
-  const testo=a.innerHTML;
-  copiaTesto(msgFor(l), ok=>{ a.innerHTML=ok?'Messaggio copiato: incollalo su Facebook':'Copia non riuscita: copialo dal punto 3';
-    setTimeout(()=>{ a.innerHTML=testo; },4000); });
-});
 document.addEventListener('click',async e=>{ const b=e.target.closest('[data-copymsg]'); if(!b) return;
   try{ await navigator.clipboard.writeText($('anamsg')._msgs[+b.dataset.copymsg]); b.textContent='Copiato'; }catch(err){ b.textContent='Copia a mano dal riquadro'; }
   setTimeout(()=>b.textContent='Copia il messaggio',2500); });
