@@ -117,7 +117,7 @@ const TPL0 = 'Buongiorno, sono {chi}. {frase}{spunto} Installiamo impianti di mi
 const FRASI0 = {
   ristorante:'Per un ristorante vuol dire niente più bancali di bottiglie da scaricare e vuoti da restituire, con la stessa acqua naturale e frizzante in tavola.',
   pizzeria:'Per una pizzeria vuol dire niente più casse di bottiglie da scaricare e vuoti da restituire, con la stessa acqua naturale e frizzante in tavola.',
-  bar:'Per un bar vuol dire niente più calcare nella macchina del caffè: meno guasti, meno chiamate al tecnico e un caffè che resta buono.',
+  bar:'Per un bar vuol dire acqua naturale e frizzante sempre pronta e fredda, senza casse di bottiglie da scaricare e da smaltire.',
   hotel:'Per una struttura come la vostra vuol dire niente più bottigliette da comprare e portare in camera ogni giorno.',
   azienda:'Per un\'azienda vuol dire via i boccioni da cambiare e da stoccare: acqua fresca per tutti, con un risparmio diretto.',
   benessere:'Per chi si allena o fa un trattamento vuol dire un punto acqua dove riempire la borraccia, senza distributori a gettoni da rifornire.',
@@ -136,7 +136,9 @@ const FRASI0 = {
   ['loc'].forEach(k=>{ const v=localStorage.getItem('md_'+k); if(v && !localStorage.getItem('depuratori_'+k)) localStorage.setItem('depuratori_'+k, v); });
 }catch(e){} })();
 const cfg = load('depuratori_cfg', {chi:'', azienda:'', sede:'', tpl:TPL0, frasi:{...FRASI0}});
-cfg.frasi = {...FRASI0, ...(cfg.frasi||{})}; if(!cfg.tpl) cfg.tpl=TPL0;
+cfg.frasi = {...FRASI0, ...(cfg.frasi||{})};
+// chi aveva già salvato la frase dei bar di prima (calcare) passa a quella nuova; una frase scritta a mano non si tocca
+if(cfg.frasi.bar==='Per un bar vuol dire niente più calcare nella macchina del caffè: meno guasti, meno chiamate al tecnico e un caffè che resta buono.') cfg.frasi.bar=FRASI0.bar; if(!cfg.tpl) cfg.tpl=TPL0;
 const saveCfg = () => save('depuratori_cfg', cfg);
 
 // ---- dati della zona (dati/, creati da estrai_zona.py)

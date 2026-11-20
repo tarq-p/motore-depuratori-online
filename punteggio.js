@@ -131,7 +131,7 @@
       if(li.caffe>0 && l.type!=='bar'){ B += 10; perche.push('Serve caffè: il calcare nella macchina è un problema anche qui.'); }
       if(li.plastica>0){ B += 10; perche.push('Sul sito parla di plastica o sostenibilità.'); }
     }
-    if(l.type==='bar') perche.push('Nei bar il calcare rovina la macchina del caffè: è il problema più sentito.');
+    if(l.type==='bar') perche.push('Nei bar l\'acqua si usa tutto il giorno, al banco e per i clienti.');
     ind.B = Math.min(100, B);
 
     // E · come contattarlo
