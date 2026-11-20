@@ -14,14 +14,14 @@
     mensa:     {label:'Mense e catering', rango:7, problema:75},
     lido:      {label:'Stabilimenti balneari', rango:8, problema:50, stagione:true}
   };
-  const NOMI = {A:'Quanta acqua usa', B:'Il problema tipico del suo settore', C:'Somiglia ai tuoi clienti', D:'Vicino a un tuo cliente', E:'Come contattarlo'};
-  const PESI = {A:.30, B:.25, C:.20, D:.15, E:.10};
+  const NOMI = {A:'Quanta acqua usa', B:'Il problema tipico del suo settore', E:'Come contattarlo'};
+  const PESI = {A:.45, B:.35, E:.20};
 
   function scala(n, soglie){ for(const [s,v] of soglie) if(n>=s) return v; return soglie[soglie.length-1][1]; }
 
-  // ---- AZIENDE: criteri loro (il confronto con i clienti, che oggi sono bar, non c'entra)
-  const NOMI_AZ = {A:'Quanto è grande', B:'Segnali che serve acqua per le persone', D:'Vicino a un tuo cliente', E:'Come contattarla'};
-  const PESI_AZ = {A:.45, B:.25, D:.15, E:.15};
+  // ---- AZIENDE: criteri loro (dimensione e segnali di bisogno)
+  const NOMI_AZ = {A:'Quanto è grande', B:'Segnali che serve acqua per le persone', E:'Come contattarla'};
+  const PESI_AZ = {A:.50, B:.30, E:.20};
   const norm = s => String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
   // forma giuridica dal nome: una ditta individuale con dieci dipendenti è rara, una S.p.A. no
   function forma(nome){
@@ -70,11 +70,6 @@
     }else manca.push('Se ha già acqua per i dipendenti (boccioni, erogatori): il sito non è stato letto, e lo dice comunque solo una telefonata.');
     ind.B = B;
 
-    ind.D = null;
-    if(l.kmCliente!=null){
-      ind.D = l.kmCliente<=3?100 : l.kmCliente<=10?80 : l.kmCliente<=25?55 : l.kmCliente<=50?30 : 10;
-      if(l.kmCliente<=10) perche.push('È a '+l.kmCliente+' km da un tuo cliente: puoi citarlo.');
-    }
     // un'azienda risponde anche al telefono e all'email: pesano più che per un bar
     ind.E = l.canale===0?100 : l.canale===1?85 : l.canale===2?60 : 0;
 
@@ -94,8 +89,7 @@
     return {lead, classe, ind, pesi:PESI_AZ, nomi:NOMI_AZ, perche, manca, crit, gia, catena, conf:Math.round(100*w), stagione:false, dieci, dimNota};
   }
 
-  // l: {type, nome, cat, canale (0 WhatsApp, 1 email, 2 telefono), kmCliente, li (cosa dice il sito), sedi}
-  // ctx: {quotaTipi: {tipo: quota dei tuoi clienti di quel tipo, 0..1}}
+  // l: {type, nome, cat, canale (0 WhatsApp, 1 email, 2 telefono), li (cosa dice il sito), sedi}
   // quello che arriva dal sito letto resta salvato nel browser: se un dato vecchio o rovinato non ha la forma giusta, lo sistemo
   function pulisci(li){
     if(!li || typeof li!=='object') return null;
@@ -139,19 +133,6 @@
     }
     if(l.type==='bar') perche.push('Nei bar il calcare rovina la macchina del caffè: è il problema più sentito.');
     ind.B = Math.min(100, B);
-
-    // C · somiglia ai clienti che hai gia'
-    const q = ctx.quotaTipi || {}, max = Math.max(0, ...Object.values(q));
-    ind.C = max>0 ? Math.round(25 + 75*(q[l.type]||0)/max) : null;
-    if(ind.C==null) manca.push('Nessun tuo cliente ritrovato nei dati: scrivili al punto 1.');
-    else if((q[l.type]||0)===max) perche.push('È dello stesso tipo dei tuoi clienti di oggi.');
-
-    // D · vicino a un tuo cliente: passaparola di zona
-    ind.D = null;
-    if(l.kmCliente!=null){
-      ind.D = l.kmCliente<=3?100 : l.kmCliente<=10?80 : l.kmCliente<=25?55 : l.kmCliente<=50?30 : 10;
-      if(l.kmCliente<=10) perche.push('È a '+l.kmCliente+' km da un tuo cliente: puoi citarlo.');
-    }
 
     // E · come contattarlo
     ind.E = l.canale===0?100 : l.canale===1?70 : l.canale===2?45 : 0;
