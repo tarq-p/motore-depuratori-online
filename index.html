@@ -508,7 +508,7 @@ function card(l){
   const ls=leadScore(l), nasc=nascosto(l);
   const web=urlSicuro(l.web), soc=urlSicuro(l.soc), mail=mailSicura(l.email);
   const visti=new Set(), link=u=>{ if(!u) return ''; const e=etichettaLink(u); if(visti.has(e)) return ''; visti.add(e); return `<a target="_blank" rel="noopener noreferrer" href="${esc(u)}">${e}</a>`; };
-  const w=waDi(l), contatti=[...numeri(l).map(n=>`<span>${IC.tel}${esc(fmtTel(n))}${w&&phoneDigits(n)===w.d?' <span class="small">(WhatsApp)</span>':(NO_WA.has(phoneDigits(n))?' <span class="small">(non su WhatsApp)</span>':'')}</span>`), mail?`<span>${IC.mail}${esc(mail)}</span>`:'',
+  const w=waDi(l), contatti=[...numeri(l).map(n=>`<span>${IC.tel}${esc(fmtTel(n))}${w&&phoneDigits(n)===w.d?' <span class="small">(WhatsApp)</span>':''}</span>`), mail?`<span>${IC.mail}${esc(mail)}</span>`:'',
     ...Object.values((locInfo[l.id]||{}).social||{}).map(urlSicuro).concat([web, soc]).sort((a,b)=>(etichettaLink(a)==='Sito'?0:1)-(etichettaLink(b)==='Sito'?0:1)).map(link)].filter(Boolean).join('');
   const badge=[`<span class="prio ${ls.classe}">${LS_CLASSI[ls.classe]}</span>`,
     nasc==='cliente'?'<span class="prio cli">Già tuo cliente</span>':'',
