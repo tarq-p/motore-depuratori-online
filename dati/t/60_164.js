@@ -1,0 +1,1 @@
+(window.MD_T=window.MD_T||{})["60_164"]=[["94039cf8021e","Agriturismo La Cerasola","r","italian restaurant","+393356727807","http://www.agriturismolacerasola.it/","lacerasola@libero.it","https://www.facebook.com/318254595037359","Località Aia del Caruso, Monteleone di Puglia",41.15465,15.24729,"Monteleone di Puglia","n",93]];

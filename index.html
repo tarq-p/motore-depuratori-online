@@ -1,0 +1,579 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Motore Depuratori · Trova chi ha bisogno di acqua trattata</title>
+<meta name="description" content="Trova bar, ristoranti, hotel e aziende tra Bari, BAT e Foggia a cui proporre un impianto di microfiltrazione: punteggio e messaggio già pronto per ciascuno.">
+<meta name="theme-color" content="#0b5fa5">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b5fa5'/%3E%3Cpath d='M32 10C24 22 18 30 18 38a14 14 0 0 0 28 0c0-8-6-16-14-28z' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="stile.css">
+</head>
+<body>
+
+<header class="hero"><div class="in">
+  <div class="logo"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 8C23 21 16 30 16 39a16 16 0 0 0 32 0c0-9-7-18-16-31z" fill="none" stroke="#fff" stroke-width="4" stroke-linejoin="round"/><path d="M24 40a8 8 0 0 0 8 8" fill="none" stroke="#9fd3f5" stroke-width="4" stroke-linecap="round"/></svg><span>Motore Depuratori</span></div>
+  <h1>Trova chi ha bisogno di acqua trattata</h1>
+  <p>Bar, ristoranti, hotel e aziende tra Bari, la BAT e Foggia: ti dico da chi partire e ti preparo il messaggio giusto per ciascuno.</p>
+</div></header>
+
+<div class="wrap">
+
+<!-- 1 · LA TUA AZIENDA -->
+<section class="card" id="s1">
+  <h2><span class="num">1</span><span>La tua azienda</span></h2>
+  <p class="lead-in">Come ti presenti nei messaggi e quali clienti hai già: li tolgo dall'elenco e li uso per citare il cliente più vicino.</p>
+  <div class="row" style="margin-bottom:12px">
+    <label style="flex:1 1 200px">Il tuo nome<input id="chi" placeholder="es. Mario"></label>
+    <label style="flex:1 1 220px">Il nome dell'azienda<input id="azienda" placeholder="es. Acqua Chiara"></label>
+    <label style="flex:1 1 180px">Dove avete la sede<input id="sede" placeholder="es. Trani" list="comunilist"></label>
+  </div>
+  <label>I tuoi clienti di oggi <span class="small" style="font-weight:400">(uno per riga: nome, comune)</span>
+    <textarea id="clienti" style="min-height:150px" placeholder="Bar Rossi, Trani&#10;Pizzeria Verdi, Andria"></textarea></label>
+  <div class="clienti-esito" id="clientiesito"></div>
+</section>
+
+<!-- 2 · DOVE CERCARE -->
+<section class="card" id="s2">
+  <h2><span class="num">2</span><span>Dove cercare</span></h2>
+  <p class="lead-in">Scegli un comune della zona (province di Bari, BAT e Foggia fino a San Severo) e quanti km intorno.</p>
+  <div class="row">
+    <div class="field-comune"><label>Dove vuoi cercare<input id="comune" placeholder="es. Trani, Bari, Foggia" autocomplete="off"></label><div id="sugg"></div></div>
+    <label>Entro quanti km<input id="radius" type="number" value="10" min="1" max="30" style="width:110px"></label>
+    <button id="go" class="big">Trova le attività</button>
+  </div>
+  <div class="chips" id="types" style="margin-top:16px"></div>
+  <div id="status"></div>
+  <div id="autositi" class="small" style="margin-top:4px"></div><div class="prog" id="autoprog"><i></i></div>
+  <div id="datawarn"></div>
+
+  <div id="risultati" style="margin-top:22px">
+  <div id="legenda" class="small" style="margin:0 0 8px">Sono in ordine di tipo, come hai chiesto (prima i ristoranti, poi le pizzerie, i bar...), e dentro ogni tipo per punteggio. Il punteggio dice da chi partire: è una stima, non una garanzia.</div>
+  <div class="bar" id="barra">
+    <div class="l"><div id="count"></div></div>
+    <button class="ghost" id="bfiltra" aria-expanded="false" aria-controls="filtri" style="display:inline-flex;gap:6px;align-items:center"><svg class="ic" viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/></svg>Filtra</button>
+  </div>
+  <div id="nascosti" class="small" style="display:none;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 10px"><span id="nasctxt"></span><label style="flex-direction:row;font-weight:600;font-size:13px;gap:6px;align-items:center"><input type="checkbox" id="fnasc"> mostrali</label></div>
+  <div id="filtri" hidden>
+    <div class="filters">
+      <label>Cerca nel nome<input id="q" placeholder="nome o via"></label>
+      <label>Tipo di attività<select id="ftype"></select></label>
+      <label>Come contattarli<select id="fcontact"><option value="">Tutti (WhatsApp, email o telefono)</option><option value="0">Solo con WhatsApp</option><option value="1">Con WhatsApp o email</option></select></label>
+      <label>Ordina per<select id="fordine"><option value="tipo">Tipo (il tuo ordine), poi punteggio</option><option value="prob">Solo punteggio (dal più alto)</option><option value="canale">Prima WhatsApp, poi email, poi telefono</option></select></label>
+      <label style="flex-direction:row;align-items:center;gap:6px;font-weight:600"><input type="checkbox" id="fgia"> Nascondi chi parla già di acqua filtrata o nomina un fornitore</label>
+      <label style="flex-direction:row;align-items:center;gap:6px;font-weight:600"><input type="checkbox" id="fdieci" checked> Aziende: solo da 10 dipendenti in su (stima dal nome e dal sito)</label>
+    </div>
+  </div>
+  <div id="empty"></div>
+  <div id="rows"></div>
+  <div id="altri" style="text-align:center;margin:14px 0 4px"></div>
+  </div>
+</section>
+
+<!-- 3 · MESSAGGI -->
+<section class="card" id="s3">
+  <h2><span class="num">3</span><span>I messaggi</span></h2>
+  <p class="lead-in">Ogni attività qui sopra ha già il suo messaggio: cambia una sola frase a seconda del tipo. Qui puoi riscriverli.</p>
+  <details><summary class="small" style="font-weight:600">Modifica i messaggi e vedi le anteprime</summary>
+  <label style="margin-top:12px">Il messaggio<textarea id="tpl"></textarea></label>
+  <div class="small" style="margin:6px 0 14px"><code>{chi}</code> tu e la tua azienda · <code>{vicino}</code> il tuo cliente più vicino a quell'attività · <code>{frase}</code> la frase del suo tipo, qui sotto · <code>{spunto}</code> una cosa vera letta sul suo sito, se c'è · <code>{nome}</code> il nome dell'attività. Chiedi ai tuoi clienti se puoi citarli: se non vuoi, togli <code>{vicino}</code>.</div>
+  <div style="font-weight:600">La frase per ogni tipo</div>
+  <div class="frasi" id="frasi"></div>
+  <button class="ghost" id="ripristina">Rimetti i messaggi di partenza</button>
+  <div style="font-weight:600;margin:16px 0 2px">Come risultano per i tipi che hai scelto</div>
+  <div id="anamsg"></div>
+  </details>
+</section>
+
+<p class="small" style="text-align:center">Dati delle attività: <span id="datainfo"></span>. Categorie e contatti non sono verificati: controlla prima di scrivere.</p>
+</div>
+
+<datalist id="comunilist"></datalist>
+<script src="dati/index.js"></script>
+<script src="dati/comuni.js"></script>
+<script src="dati/non_su_whatsapp.js"></script>
+<script src="punteggio.js"></script>
+<script>
+const P = window.MD_PUNTEGGIO;
+const TYPES = P.TIPI;
+const T2K = {r:'ristorante', p:'pizzeria', b:'bar', h:'hotel', a:'azienda', s:'benessere', m:'mensa', l:'lido'};
+const $ = id => document.getElementById(id);
+// dati che arrivano da fuori (elenchi di terzi, siti): mai fidarsi, anche se mostrati come testo
+function urlSicuro(u){
+  u=String(u==null?'':u).trim(); if(!u||u.length>300) return '';
+  if(/^[a-z][a-z0-9+.\-]*:/i.test(u)) return /^https?:\/\/[^\s"'<>]+$/i.test(u)?u:'';
+  return /^[^\s"'<>@]+\.[^\s"'<>@]+$/.test(u)?'http://'+u:'';
+}
+function mailSicura(m){ m=String(m==null?'':m).trim(); return /^[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}$/.test(m)?m:''; }
+function telSicuro(t){ t=String(t==null?'':t).trim(); return /^[+\d][\d\s().\-]{5,24}$/.test(t)?t:''; }
+const esc = s => String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm = s => String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+function load(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
+function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+function dist(a,b,c,d){ const R=6371,t=x=>x*Math.PI/180,dl=t(c-a),dn=t(d-b);
+  const h=Math.sin(dl/2)**2+Math.cos(t(a))*Math.cos(t(c))*Math.sin(dn/2)**2; return 2*R*Math.asin(Math.sqrt(h)); }
+function hostDi(u){ return String(u||'').trim().toLowerCase().replace(/^https?:\/\//,'').replace(/^www\./,'').split(/[\/:?#]/)[0]; }
+
+// ---- testi di partenza dei messaggi
+const TPL0 = 'Buongiorno, sono {chi}.{vicino} {frase}{spunto} Installiamo impianti di microfiltrazione dell\'acqua in noleggio operativo: un canone al mese con installazione, manutenzione, filtri e documentazione in regola già compresi. Se preferite, anche in acquisto. Posso passare da {nome} per un sopralluogo gratuito, senza impegno?';
+const FRASI0 = {
+  ristorante:'Per un ristorante vuol dire niente più bancali di bottiglie da scaricare e vuoti da restituire, con la stessa acqua naturale e frizzante in tavola.',
+  pizzeria:'Per una pizzeria vuol dire niente più casse di bottiglie da scaricare e vuoti da restituire, con la stessa acqua naturale e frizzante in tavola.',
+  bar:'Per un bar vuol dire niente più calcare nella macchina del caffè: meno guasti, meno chiamate al tecnico e un caffè che resta buono.',
+  hotel:'Per una struttura come la vostra vuol dire niente più bottigliette da comprare e portare in camera ogni giorno.',
+  azienda:'Per un\'azienda vuol dire via i boccioni da cambiare e da stoccare: acqua fresca per tutti, con un risparmio diretto.',
+  benessere:'Per chi si allena o fa un trattamento vuol dire un punto acqua dove riempire la borraccia, senza distributori a gettoni da rifornire.',
+  mensa:'Per chi serve tanti pasti vuol dire acqua prodotta sul posto, senza furgoni carichi di bottiglie.',
+  lido:'Per uno stabilimento vuol dire niente plastica da portare sulla sabbia, con l\'impianto pronto prima dell\'estate.'
+};
+const CLIENTI0 = '';
+// Nomi della memoria del browser solo per questo motore. Prima erano md_cfg1 e md_no, gli stessi del motore dolci,
+// che online sta sullo stesso dominio (tarq-p.github.io): la pagina leggeva i messaggi dei dolci.
+// Recupero le impostazioni vecchie solo sul computer (dove md_ era solo dei depuratori), mai online,
+// e non cancello niente: quelle chiavi online sono del motore dolci.
+(function(){ try{
+  if(!/^(127\.0\.0\.1|localhost|)$/.test(location.hostname)) return;
+  const vecchia=JSON.parse(localStorage.getItem('md_cfg1')||'null');
+  if(!localStorage.getItem('depuratori_cfg') && vecchia && vecchia.frasi && vecchia.frasi.ristorante && vecchia.frasi.lido)
+    localStorage.setItem('depuratori_cfg', JSON.stringify(vecchia));
+  ['loc'].forEach(k=>{ const v=localStorage.getItem('md_'+k); if(v && !localStorage.getItem('depuratori_'+k)) localStorage.setItem('depuratori_'+k, v); });
+}catch(e){} })();
+const cfg = load('depuratori_cfg', {chi:'', azienda:'', sede:'', clienti:CLIENTI0, tpl:TPL0, frasi:{...FRASI0}});
+cfg.frasi = {...FRASI0, ...(cfg.frasi||{})}; if(!cfg.tpl) cfg.tpl=TPL0; if(cfg.clienti==null) cfg.clienti=CLIENTI0;
+const saveCfg = () => save('depuratori_cfg', cfg);
+
+// ---- dati della zona (dati/, creati da estrai_zona.py)
+const META = window.MD_META || null, COMUNI = window.MD_COMUNI || [];    // [nome, comune, provincia, lat, lon, pop, classe]
+(function(){
+  if(META&&COMUNI.length){ $('datainfo').textContent = 'aggiornamento del '+META.data.split('-').reverse().join('/')+', '+META.attivita.toLocaleString('it-IT')+' attività in '+META.comuni+' comuni'; return; }
+  $('datawarn').innerHTML = 'Non trovo i dati: serve la cartella <b>dati</b> accanto a index.html. Per rifarli: <code>.venv/bin/python estrai_zona.py</code> (vedi LEGGIMI.md).';
+})();
+$('comunilist').innerHTML = COMUNI.filter(c=>c[0]===c[1]).map(c=>`<option value="${esc(c[0])}">`).join('');
+const comuneLabel = c => c[0]+(c[0]!==c[1]?' ('+c[1]+')':'')+(c[2]?', '+c[2]:'');
+function centroComune(nome){ const n=norm(String(nome||'').trim()); return COMUNI.find(c=>c[0]===c[1]&&norm(c[0])===n)||null; }
+function loadTile(key){
+  return new Promise(res=>{
+    if(window.MD_T&&window.MD_T[key]) return res(window.MD_T[key]);
+    const sc=document.createElement('script'); sc.src='dati/t/'+key+'.js';
+    sc.onload=()=>res((window.MD_T&&window.MD_T[key])||[]); sc.onerror=()=>res([]);
+    document.head.appendChild(sc);
+  });
+}
+async function tessereIntorno(lat,lon,R){
+  const T=META.tile, dLat=R/111000, dLon=R/(111000*Math.cos(lat*Math.PI/180)), have=new Set(META.tiles), keys=[];
+  for(let ix=Math.floor((lon-dLon)/T); ix<=Math.floor((lon+dLon)/T); ix++)
+    for(let iy=Math.floor((lat-dLat)/T); iy<=Math.floor((lat+dLat)/T); iy++){ const k=ix+'_'+iy; if(have.has(k)) keys.push(k); }
+  return (await Promise.all(keys.map(loadTile))).flat();
+}
+
+// ---- i tuoi clienti: li ritrovo nei dati (regole severe), poi escono dall'elenco e servono per citare il più vicino
+const GENERICHE = new Set(['bar','caffe','caffetteria','caff','pasticceria','pizzeria','ristorante','trattoria','osteria','gelateria','pub','burger','braceria','hotel','il','lo','la','le','i','gli','di','del','della','da','e','the','&']);
+const DEBOLI = new Set(['nuovo','nuova','centrale','italia','roma','sport','piazza','corso','sole','mare','stazione','europa','duomo','castello']);
+const parole = s => norm(s).replace(/[^a-z0-9 ]+/g,' ').split(/\s+/).filter(Boolean);
+const chiave = s => parole(s).filter(w=>!GENERICHE.has(w));
+function tipoDalNome(n){ const t=norm(n); return /pizzer/.test(t)?'pizzeria' : /\b(bar|caff|pasticc|gelat|cornett)/.test(t)?'bar' : /ristor|tratt|oster|burger|brace/.test(t)?'ristorante' : /hotel|b&b|albergo/.test(t)?'hotel' : null; }
+let CLIENTI = [], GIA = new Set();
+async function trovaClienti(){
+  const MAX_CLIENTI=200;
+  // righe senza un nome vero (vuote, solo virgole o simboli) non sono clienti
+  const parti = r => { const i=r.lastIndexOf(','); return i>=0 ? [r.slice(0,i).trim(), r.slice(i+1).trim()] : [r.trim(), '']; };
+  const tutte = String(cfg.clienti||'').split('\n').map(r=>r.trim()).filter(r=>/[\p{L}\d]/u.test(parti(r)[0]));
+  const righe = tutte.slice(0,MAX_CLIENTI);
+  const out=[];
+  for(const r of righe){
+    const [n0,c0]=parti(r), nome=n0.slice(0,120), comune=c0.slice(0,60);
+    const cc=centroComune(comune), cl={nome, comune:cc?cc[0]:comune, tipo:tipoDalNome(nome), lat:cc?cc[3]:null, lon:cc?cc[4]:null, id:null, trovato:''};
+    if(cc && META){
+      const k=chiave(nome), cand=(await tessereIntorno(cc[3],cc[4],6000)).filter(o=>norm(o[11])===norm(cc[0]));
+      const debole = k.length===1 && (k[0].length<5 || DEBOLI.has(k[0]) || /^\d+$/.test(k[0]));
+      const ok = cand.filter(o=>{
+        const kn=chiave(o[1]), primo=chiave(String(o[1]).split(/\s[-|–]\s/)[0]);
+        if(!k.length) return false;
+        if(debole) return kn.join(' ')===k.join(' ') || primo.join(' ')===k.join(' ') || (/^\d+$/.test(k[0]) && kn.includes(k[0]) && kn.length<=2);
+        return k.every(w=>kn.includes(w));
+      }).sort((a,b)=>(T2K[a[2]]==='bar'?0:1)-(T2K[b[2]]==='bar'?0:1) || a[1].length-b[1].length);
+      if(ok.length){ const o=ok[0]; cl.id='o'+o[0]; cl.lat=o[9]; cl.lon=o[10]; cl.trovato=o[1]; cl.tipo=T2K[o[2]]; }
+    }
+    out.push(cl);
+  }
+  CLIENTI=out; GIA=new Set(out.filter(c=>c.id).map(c=>c.id));
+  const trov=out.filter(c=>c.id).length;
+  $('clientiesito').innerHTML = out.length ? `Ritrovati nei dati ${trov} clienti su ${out.length}.${tutte.length>MAX_CLIENTI?` <b>Ne leggo solo i primi ${MAX_CLIENTI} su ${tutte.length}.</b>`:''} Controlla che siano loro: <ul>${out.map(c=>`<li><b>${esc(c.nome)}</b>, ${esc(c.comune)} → ${c.id?'trovato come «'+esc(c.trovato)+'» ('+esc((TYPES[c.tipo]||{}).label||'')+')':(c.lat!=null?'non trovato: per la vicinanza uso il centro del comune':'comune non riconosciuto nella zona')}</li>`).join('')}</ul>` : '';
+  for(const l of Object.values(leads)) aggiornaVicino(l);
+  render();
+}
+function quotaTipi(){ const q={}, n=CLIENTI.filter(c=>c.tipo).length; if(!n) return q; CLIENTI.forEach(c=>{ if(c.tipo) q[c.tipo]=(q[c.tipo]||0)+1/n; }); return q; }
+function aggiornaVicino(l){
+  let best=null, bd=1e9;
+  for(const c of CLIENTI){ if(c.lat==null) continue; const d=dist(l.lat,l.lon,c.lat,c.lon); if(d<bd){ bd=d; best=c; } }
+  l.vicino=best; l.kmCliente=best?Math.round(bd*10)/10:null;
+}
+
+// ---- impostazioni
+['chi','azienda','sede','tpl'].forEach(id=>{ $(id).value=cfg[id]||''; $(id).addEventListener('input',()=>{ cfg[id]=$(id).value; saveCfg(); render(); }); });
+$('clienti').value=cfg.clienti||'';
+let tClienti=null; $('clienti').addEventListener('input',()=>{ cfg.clienti=$('clienti').value; saveCfg(); clearTimeout(tClienti); tClienti=setTimeout(trovaClienti,700); });
+function renderFrasi(){
+  $('frasi').innerHTML = Object.entries(TYPES).map(([k,t])=>`<label>${esc(t.label)}<textarea data-frase="${k}">${esc(cfg.frasi[k]||'')}</textarea></label>`).join('');
+}
+renderFrasi();
+$('frasi').addEventListener('input',e=>{ const k=e.target.dataset.frase; if(!k) return; cfg.frasi[k]=e.target.value; saveCfg(); render(); });
+$('ripristina').onclick=()=>{ cfg.tpl=TPL0; cfg.frasi={...FRASI0}; saveCfg(); $('tpl').value=TPL0; renderFrasi(); render(); };
+
+// ---- tipi e comune da cercare
+$('types').innerHTML = Object.entries(TYPES).map(([k,t])=>`<label class="chip"><input type="checkbox" value="${k}" checked> ${t.label}</label>`).join('');
+$('ftype').innerHTML = '<option value="">Tutti</option>'+Object.entries(TYPES).map(([k,t])=>`<option value="${k}">${t.label}</option>`).join('');
+let selComune=null;
+function suggest(q){
+  q=norm(q.trim()); if(q.length<2) return [];
+  const starts=[], has=[];
+  for(const c of COMUNI){ const n=norm(c[0]); if(n.startsWith(q)) starts.push(c); else if(has.length<12 && n.includes(q)) has.push(c); if(starts.length>=12) break; }
+  return starts.concat(has).slice(0,12);
+}
+function showSugg(){
+  const list=suggest($('comune').value), box=$('sugg');
+  if(!list.length){ box.style.display='none'; return; }
+  box.innerHTML=list.map((c,i)=>`<div data-i="${i}"><b>${esc(c[0])}</b> <span class="small">${esc(c[0]!==c[1]?'frazione di '+c[1]+', ':'')}${esc(c[2])}</span></div>`).join('');
+  box.style.display='block'; box._list=list;
+}
+function pickComune(c){ selComune=c; $('comune').value=comuneLabel(c); $('sugg').style.display='none'; }
+$('comune').addEventListener('input',()=>{ selComune=null; $('comune').style.outline=''; showSugg(); });
+$('comune').addEventListener('keydown',e=>{ if(e.key==='Enter'){ const l=$('sugg')._list; if($('sugg').style.display!=='none'&&l&&l.length&&!selComune) pickComune(l[0]); $('go').click(); } });
+$('sugg').addEventListener('mousedown',e=>{ const d=e.target.closest('[data-i]'); if(d){ e.preventDefault(); pickComune($('sugg')._list[+d.dataset.i]); } });
+document.addEventListener('click',e=>{ if(!e.target.closest('#comune')&&!e.target.closest('#sugg')) $('sugg').style.display='none'; });
+$('types').addEventListener('change',()=>renderSampleMsgs());
+
+// ---- stato
+let leads = {};                       // solo i risultati dell'ultima ricerca
+let CERCATO=false, MOSTRA=30, RIGHE=[], SENZA_CONTATTI=0, TOLTI_FAST=0, TOLTI_FORNI=0, AUTO_PRONTO=false;
+// Fuori dall'elenco, come nel motore vino: fast food, kebab, piadinerie, rosticcerie, paninoteche, poke, friggitorie,
+// street food. Vendono acqua in bottiglia sigillata, non la servono in caraffa: non è il cliente giusto.
+const FAST_CAT = /^(fast food restaurant|doner kebab restaurant|burger restaurant|chicken restaurant|hot dog restaurant|fish and chips restaurant|taco restaurant|restaurant equipment and supply|piadina restaurant|poke restaurant|diner|sandwich shop|street food|food stand|food truck|food court)$/;
+const FAST_NOME = /\b(kebab\w*|kebap\w*|doner|döner|shawarma|mc ?donald'?s?|burger king|kfc|fast ?food|hot ?dog|fried chicken|piadin\w*|rosticc\w*|panin\w*|poke|poké|friggitori\w*|street ?food|diner)\b/i;
+// Street food e panifici registrati come ristoranti o pizzerie: si riconoscono solo dal nome. Vale solo per ristoranti,
+// pizzerie, bar e catering (un lido «Pizza & Burger» resta) e non se il nome dice anche ristorante, trattoria o osteria.
+const STREET_NOME = /(\btake ?away|\bpanzerott\w*|fritt[oi]\b|\bfrittur\w*|\bal taglio|\bin teglia|\bpucceri\w*|\barrostic\w*|burger\w*)/i;
+const PANE_NOME = /\b(panific\w*|panetteri\w*|fornai\w*|focacceri\w*|boulangerie|tarallific\w*|taralli)\b/i;
+const VERO_RISTORANTE = /\b(ristorante|trattoria|osteria)\b/i;
+const DA_CIBO = t => ['ristorante','pizzeria','bar','mensa'].includes(t);
+function fastFood(l){ return FAST_CAT.test(l.cat||'') || FAST_NOME.test(l.nome||'')
+  || (DA_CIBO(l.type) && STREET_NOME.test(l.nome||'') && !VERO_RISTORANTE.test(l.nome||'')); }
+// Fuori anche panifici («bakery») e tarallifici. Restano le pasticcerie e chi fa anche bar o caffè: hanno la macchina del caffè.
+function fornoPuro(l){ return /tarallific|\btaralli\b/i.test(l.nome||'')
+  || (l.cat==='bakery' && !/pasticc|caff|\bbar\b|gelat/i.test(l.nome||''))
+  || (DA_CIBO(l.type) && PANE_NOME.test(l.nome||'') && !VERO_RISTORANTE.test(l.nome||'')); }
+const NO_WA = new Set((window.MD_NOWA||[]).map(String));   // numeri che non sono su WhatsApp (dati/non_su_whatsapp.js)
+let locInfo = load('depuratori_loc', {});     // cosa dice il sito dell'attività (letto una volta e ricordato)
+let emptyMsg = 'Scegli dove vuoi cercare e premi «Trova le attività»: in pochi secondi hai l\'elenco.';
+
+// ---- ricerca
+$('go').onclick = async ()=>{
+  const stop=(msg,campo)=>{ $('status').textContent=msg; emptyMsg=msg; leads={}; if(campo){ $('comune').style.outline='2px solid var(--wine)'; $('comune').focus(); } render(); };
+  $('comune').style.outline='';
+  const sel=[...document.querySelectorAll('#types input:checked')].map(i=>i.value);
+  if(!META||!COMUNI.length) return stop('Non trovo i dati: serve la cartella dati accanto a index.html.');
+  const scritto=$('comune').value.trim();
+  let sc=(selComune && $('comune').value===comuneLabel(selComune)) ? selComune : (suggest(scritto)[0]||null);
+  if(!sc && !scritto && cfg.sede) sc=centroComune(cfg.sede);
+  if(!sc) return stop(scritto ? 'Non trovo «'+scritto.slice(0,40)+'» nella zona. La zona è Bari, BAT e Foggia fino a San Severo: scegli dall\'elenco che compare.' : 'Scrivi il nome di un comune (per esempio Trani), scegli dall\'elenco e premi «Trova le attività».', true);
+  if(!sel.length) return stop('Scegli almeno un tipo di attività.');
+  const R=Math.min(30,Math.max(1,+$('radius').value||10))*1000;
+  $('go').disabled=true; CERCATO=true; MOSTRA=30; leads={}; render();
+  try{
+    if(!selComune) pickComune(sc);
+    const g={lat:sc[3], lon:sc[4], name:sc[0]};
+    $('status').textContent='Cerco le attività intorno a '+g.name+'...';
+    const recs=await tessereIntorno(g.lat,g.lon,R);
+    let tot=0;
+    for(const o of recs){
+      const type=T2K[o[2]]; if(!type||!sel.includes(type)) continue;
+      if(dist(g.lat,g.lon,o[9],o[10])*1000>R) continue;
+      const id='o'+o[0];
+      leads[id]={id, nome:String(o[1]||'').slice(0,120), type, cat:o[3]||'', addr:String(o[8]||'').slice(0,200), comune:o[11]||'',
+        soc:urlSicuro(o[7]), phone:telSicuro(o[4]), email:mailSicura(o[6]), web:urlSicuro(o[5]),
+        lat:o[9], lon:o[10], km:Math.round(dist(g.lat,g.lon,o[9],o[10])*10)/10,
+        stato:o[12]||'n', aff:o[13]==null?null:+o[13]};
+      tot++;
+    }
+    { // Doppioni: la stessa attività, o la stessa persona da contattare, registrata più volte nei dati. Si uniscono:
+      //  - stesso telefono o stessa email: è la stessa persona da contattare (anche se i nomi o le sedi sono diversi);
+      //  - stesso nome nello stesso comune;
+      //  - nome quasi uguale (senza «bar», «pizzeria», «B&B»...), stesso tipo, entro 2 km.
+      // Un telefono, un'email o un nome che compare in più di 6 attività è un centralino o una piattaforma: non si unisce.
+      const ids=Object.keys(leads), padre={}; ids.forEach(i=>padre[i]=i);
+      const trova=i=>{ while(padre[i]!==i){ padre[i]=padre[padre[i]]; i=padre[i]; } return i; };
+      const unisci=(a,b)=>{ a=trova(a); b=trova(b); if(a!==b) padre[b]=a; };
+      const chiavi={}, metti=(k,id)=>{ if(k) (chiavi[k]=chiavi[k]||[]).push(id); };
+      const GENERICHE=/\b(bar|caffe|caffetteria|cafe|pizzeria|ristorante|trattoria|osteria|b ?& ?b|b and b|bed ?(?:&|and) ?breakfast|bnb|hotel|albergo|srl|srls|sas|snc|spa|s r l|di|da|del|della|dei|il|lo|la|le|i|gli|e|and)\b/g;
+      const quasi=l=>norm(l.nome).replace(/[^a-z0-9& ]+/g,' ').replace(GENERICHE,' ').replace(/[^a-z0-9]+/g,'');
+      for(const l of Object.values(leads)){
+        numeri(l).forEach(n=>{ const d=phoneDigits(n).replace(/^39/,''); if(d.length>=6) metti('t'+d,l.id); });
+        const m=(l.email||'').trim().toLowerCase(); if(m) metti('m'+m,l.id);
+        const n=norm(l.nome).replace(/[^a-z0-9]+/g,''); if(n) metti('n'+n+'|'+norm(l.comune||''),l.id);
+      }
+      Object.values(chiavi).forEach(g=>{ if(g.length>=2 && g.length<=6) g.slice(1).forEach(id=>unisci(g[0],id)); });
+      const perQuasi={}; Object.values(leads).forEach(l=>{ const k=quasi(l); if(k.length>=4) (perQuasi[k+'|'+l.type]=perQuasi[k+'|'+l.type]||[]).push(l); });
+      Object.values(perQuasi).forEach(g=>{ if(g.length>6) return;
+        for(let i=0;i<g.length;i++) for(let j=i+1;j<g.length;j++) if(dist(g[i].lat,g[i].lon,g[j].lat,g[j].lon)<=2) unisci(g[i].id,g[j].id); });
+      const gruppi={}; ids.forEach(i=>{ const r=trova(i); (gruppi[r]=gruppi[r]||[]).push(leads[i]); });
+      // si tiene la scheda con più contatti; le altre le passano numeri, email, sito e nomi
+      const punti=l=>(l.phone?2:0)+(l.email?2:0)+(l.web?1:0)+(l.soc?1:0)+(l.stato==='a'?1:0)+(l.aff||0)/1000;
+      let doppi=0;
+      Object.values(gruppi).forEach(g=>{
+        if(g.length<2){ g[0].sedi=1; return; }
+        g.sort((a,b)=>punti(b)-punti(a)); const t=g[0], nomi=new Set([norm(t.nome)]), posti=[t]; t.anche=[];
+        g.slice(1).forEach(l=>{
+          ['phone','email','web','soc','addr'].forEach(c=>{ if(!t[c]&&l[c]) t[c]=l[c]; });
+          altroNumero(t,l);
+          if(!nomi.has(norm(l.nome))){ nomi.add(norm(l.nome)); t.anche.push(l.nome); }
+          if(!posti.some(q=>dist(q.lat,q.lon,l.lat,l.lon)<=1)) posti.push(l);
+          if(GIA.has(l.id)) GIA.add(t.id);
+          if(l.stato==='a') t.stato='a';
+          if(l.aff!=null) t.aff=Math.max(t.aff||0,l.aff);
+          delete leads[l.id]; doppi++;
+        });
+        t.sedi=posti.length;
+        // se il nome tenuto è generico («BED & Breakfast», «Bar»), mostro uno degli altri, più riconoscibile
+        if(quasi(t).length<4){ const i=t.anche.findIndex(n=>quasi({nome:n}).length>=4); if(i>=0){ const vero=t.anche[i]; t.anche[i]=t.nome; t.nome=vero; } }
+      });
+      tot-=doppi;
+      let senza=0; Object.values(leads).forEach(l=>{ if(!l.phone&&!l.email){ delete leads[l.id]; senza++; } });
+      tot-=senza; SENZA_CONTATTI=senza;
+      let fast=0, forni=0; Object.values(leads).forEach(l=>{ if(GIA.has(l.id)) return; if(fastFood(l)){ delete leads[l.id]; fast++; } else if(fornoPuro(l)){ delete leads[l.id]; forni++; } });
+      tot-=fast+forni; TOLTI_FAST=fast; TOLTI_FORNI=forni;
+    }
+    Object.values(leads).forEach(aggiornaVicino);
+    $('status').textContent = tot ? `Ho trovato ${tot} attività entro ${R/1000} km da ${g.name}.`+(()=>{ const t=[SENZA_CONTATTI?SENZA_CONTATTI+' senza telefono né email':'', TOLTI_FAST?TOLTI_FAST+' fast food, kebab e street food':'', TOLTI_FORNI?TOLTI_FORNI+' panifici e tarallifici':''].filter(Boolean); return t.length?' Ne ho tolte '+t.join(', ')+'.':''; })()
+                                  : 'Nessuna attività trovata: prova ad aumentare i km o a scegliere altri tipi.';
+    emptyMsg='Nessuna attività entro '+(R/1000)+' km da '+g.name+' con i tipi scelti. Aumenta i km (massimo 30) o scegli più tipi.';
+    autoGiro++; $('autositi').textContent=''; progres(0,0); AUTO_PRONTO=!!tot;
+    render();
+    if(tot){ $('risultati').scrollIntoView({behavior:'smooth',block:'start'}); setTimeout(leggiSitiPrimi,300); }
+  }catch(e){ $('status').textContent='Qualcosa non ha funzionato: '+e.message+'.'; render(); }
+  $('go').disabled=false;
+};
+
+// ---- contatti
+function phoneDigits(p){ let d=String(p).replace(/[^\d+]/g,''); if(d.startsWith('+')) d=d.slice(1); else if(d.startsWith('00')) d=d.slice(2); else if(d.startsWith('3')&&d.length>=9&&d.length<=10) d='39'+d; return d; }
+function isMobileIT(d){ return /^393\d{8,9}$/.test(d); }
+// tutti i numeri dell'attività: il suo e quelli dei doppioni uniti (nei dati la stessa attività può avere più numeri)
+function numeri(l){ return [l.phone].concat(l.altri||[]).map(telSicuro).filter(Boolean); }
+function altroNumero(t,l){ const d=x=>phoneDigits(telSicuro(x)||''); const n=telSicuro(l.phone);
+  if(n && d(n) && d(n)!==d(t.phone) && !(t.altri||[]).some(a=>d(a)===d(n))) (t.altri=t.altri||[]).push(n);
+  (l.altri||[]).forEach(a=>altroNumero(t,{phone:a})); }
+// il numero per WhatsApp: quello del pulsante WhatsApp del suo sito (sicuro), altrimenti il primo cellulare che non hai segnato
+function waDi(l){
+  const li=locInfo[l.id], dalSito=((li&&li.vivo&&Array.isArray(li.whatsapp))?li.whatsapp:[]).map(String).filter(d=>/^\d{10,15}$/.test(d)&&!NO_WA.has(d));
+  if(dalSito.length) return {d:dalSito[0], sito:true};
+  const cel=numeri(l).map(phoneDigits).find(d=>isMobileIT(d)&&!NO_WA.has(d));
+  return cel?{d:cel, sito:false}:null;
+}
+function canale(l){ return waDi(l)?0 : mailSicura(l.email)?1 : numeri(l).length?2 : 3; }
+function etichettaLink(u){ const h=hostDi(u); return /(^|\.)instagram\.com$|^instagr\.am$/.test(h)?'Instagram' : /(^|\.)(facebook\.com|fb\.com|fb\.me)$/.test(h)?'Facebook' : /(^|\.)tiktok\.com$/.test(h)?'TikTok' : 'Sito'; }
+function fmtTel(t){ let d=String(t||'').replace(/[^\d]/g,''); if(String(t||'').trim().startsWith('00')) d=d.replace(/^00/,'');
+  if(d.startsWith('39')&&d.length>=11) d=d.slice(2); else if(!(d.startsWith('3')||d.startsWith('0'))||d.length<6||d.length>11) return t;
+  return '+39 '+(d.startsWith('3')?d.slice(0,3)+' '+d.slice(3,6)+' '+d.slice(6):d.slice(0,4)+' '+d.slice(4)); }
+
+// ---- messaggi: tre pezzi fissi, uno che cambia per tipo (SPECIFICA.md, 7 bis)
+function chiSono(){
+  const c=(cfg.chi||'').trim(), a=(cfg.azienda||'').trim(), s=(cfg.sede||'').trim();
+  if(c&&a) return c+' di '+a+(s?', a '+s:'');
+  if(a) return a+(s?', di '+s:'');
+  if(c) return c+(s?', di '+s:'');
+  return 'un\'azienda di impianti per l\'acqua della zona';
+}
+function vicinoDi(l){
+  if(!l.vicino) return '';
+  const c=l.vicino;
+  return l.kmCliente<=40 ? ' Lavoriamo già con '+c.nome+(norm(c.comune)!==norm(l.comune||'')||l.kmCliente>2?' a '+c.comune:'')+'.' : ' Lavoriamo già con bar e caffetterie della BAT.';
+}
+function spuntoDi(l){
+  const li=locInfo[l.id]; if(!li||!li.vivo) return '';
+  if(l.type==='azienda'){
+    if(li.pausa>0) return ' Ho visto che avete un\'area break o una mensa per i dipendenti: è il posto giusto per l\'acqua.';
+    if(li.dipendenti>150) return ' Con tante persone al lavoro, i boccioni da cambiare sono tanti.';
+    if(li.dipendenti>=10) return ' Con '+li.dipendenti+' persone, i boccioni da cambiare sono tanti.';
+    if(li.struttura>0) return ' Con uno stabilimento e chi lavora a turni, avere acqua fresca sempre pronta fa la differenza.';
+    return '';
+  }
+  if(li.cerimonie>0) return ' Ho visto che organizzate cerimonie e banchetti: è lì che le bottiglie pesano di più.';
+  if(li.coperti>=40) return ' Con '+li.coperti+' coperti le bottiglie diventano tante.';
+  if(li.camere>=5) return ' Con '+li.camere+' camere sono tante bottigliette ogni giorno.';
+  if(li.plastica>0) return ' Ho letto che fate attenzione alla plastica: va nella stessa direzione.';
+  if(li.caffe>0 && l.type!=='bar') return ' Ho visto che servite caffè: l\'impianto protegge anche la macchina dal calcare.';
+  return '';
+}
+function msgFor(l){
+  const val={chi:chiSono(), vicino:vicinoDi(l), frase:cfg.frasi[l.type]||'', spunto:spuntoDi(l), nome:l.nome};
+  return (cfg.tpl||TPL0).replace(/\{(\w+)\}/g,(m,k)=>Object.prototype.hasOwnProperty.call(val,k)?val[k]:m).replace(/\s{2,}/g,' ').trim();
+}
+const IC={
+  wa:'<svg class="ic fill" viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.2 14.2c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.2-4.6-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.8s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .5l-.4.6c-.1.2-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1.1c.2-.3.4-.2.6-.1l1.9.9c.3.1.5.2.5.3.1.2.1.8-.1 1.4z"/></svg>',
+  mail:'<svg class="ic" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.5 7 8.5 6 8.5-6"/></svg>',
+  tel:'<svg class="ic" viewBox="0 0 24 24"><path d="M5 4h3.5l1.5 4-2 1.5a11 11 0 0 0 6.5 6.5l1.5-2 4 1.5V19a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg>'
+};
+function actions(l){
+  const out=[], m=msgFor(l), tel=numeri(l)[0]||'', mail=mailSicura(l.email), w=waDi(l);
+  if(w) out.push(`<a class="main" target="_blank" rel="noopener noreferrer" title="${w.sito?'Numero WhatsApp preso dal suo sito':'Cellulare dai dati: non si sa se è su WhatsApp'}" href="https://wa.me/${w.d}?text=${encodeURIComponent(m)}">${IC.wa}WhatsApp</a>`);
+  if(mail) out.push(`<a class="${w?'':'main'}" href="mailto:${esc(mail)}?subject=${encodeURIComponent('Acqua per '+l.nome+': sopralluogo gratuito')}&body=${encodeURIComponent(m)}">${IC.mail}Email</a>`);
+  if(tel) out.push(`<a class="${w||mail?'':'main'}" href="tel:${esc(tel.replace(/[^\d+]/g,''))}">${IC.tel}Chiama</a>`);
+  return out.join('');
+}
+
+// ---- punteggio (punteggio.js): calcolato qui, sul tuo computer
+const LS_CLASSI = {hi:'Alta priorità', mid:'Buona opportunità', val:'Da valutare', low:'Bassa priorità'};
+let QUOTA = {};
+function leadScore(l){
+  if(l._s && l._sv===l._v+'|'+QV) return l._s;
+  l._s=P.calcola({type:l.type, nome:l.nome, cat:l.cat, canale:canale(l), kmCliente:l.kmCliente, li:locInfo[l.id]||null, sedi:l.sedi}, {quotaTipi:QUOTA});
+  l._sv=(l._v||0)+'|'+QV; return l._s;
+}
+let QV=0;   // cambia quando cambiano i clienti: i punteggi si ricalcolano
+
+// ---- lettura dei siti (serve il motore acceso: Avvia.command)
+async function chiediSitoLocale(web){
+  for(let tentativo=0; tentativo<3; tentativo++){
+    let r; try{ r=await fetch('/api/analizza?url='+encodeURIComponent(web)); }catch(e){ break; }
+    let j; try{ j=await r.json(); }catch(e){ break; }
+    if(r.status===429){ await new Promise(ok=>setTimeout(ok,3000)); continue; }
+    if(!r.ok) throw new Error(j.errore||('errore '+r.status));
+    return j;
+  }
+  throw new Error('NOSERVER');
+}
+function salvaSitoLocale(id,j){ locInfo[id]=j; save('depuratori_loc',locInfo); }
+function sitoDaLeggere(l){
+  if(!urlSicuro(l.web) || /instagram|facebook|tripadvisor|thefork|justeat|deliveroo|glovo|booking\.com/i.test(l.web)) return false;
+  const li=locInfo[l.id]; if(!li) return true;
+  if(li.vivo && li.struttura==null) return true;          // letto con la versione di prima: rileggo per i segnali da azienda
+  if(li.vivo===false && (li.dns || /raggiungibile/.test(li.motivo||''))) return true;   // fallito per la rete (DNS): riprovo
+  return (Date.now()-new Date(li.data).getTime())/864e5 > 30;
+}
+function progres(f,t){ const b=$('autoprog'); b.style.display=t?'block':'none'; b.firstElementChild.style.width=(t?Math.min(100,f/t*100):0)+'%'; }
+const AUTO_SITI=30, PER_TIPO=8; let autoGiro=0, SERVER=null;
+// i primi 30 dell'elenco più i primi 8 di ogni tipo: senza, con l'ordine per tipo si leggerebbero solo ristoranti
+function daLeggereOra(){
+  const ord=filtered(), scelti=new Set(ord.slice(0,AUTO_SITI)), visti={};
+  for(const l of ord){ const n=visti[l.type]||0; if(n<PER_TIPO && urlSicuro(l.web)){ scelti.add(l); visti[l.type]=n+1; } }
+  return [...scelti].filter(sitoDaLeggere);
+}
+async function leggiSitiPrimi(){
+  const giro=++autoGiro, st=$('autositi'); let fatti=0, totale=0;
+  for(let passo=0; passo<3 && giro===autoGiro; passo++){
+    const coda=daLeggereOra();
+    if(!coda.length) break;
+    totale+=coda.length;
+    const lavora=async()=>{ while(coda.length && giro===autoGiro){
+      const l=coda.shift();
+      try{ salvaSitoLocale(l.id, await chiediSitoLocale(l.web)); SERVER=true; }
+      catch(e){ if(e.message==='NOSERVER'){ SERVER=false; coda.length=0; break; }
+        locInfo[l.id]={vivo:false, motivo:String(e.message||e).slice(0,60), data:new Date().toISOString().slice(0,10)}; save('depuratori_loc',locInfo); }
+      l._v=(l._v||0)+1; fatti++; progres(fatti,totale); st.textContent=`Leggo i siti dei primi in elenco e dei primi di ogni tipo: ${fatti} di ${totale} letti...`; render();
+    } };
+    await Promise.all([lavora(),lavora(),lavora()]);
+    if(SERVER===false) break;
+  }
+  if(giro!==autoGiro) return;
+  progres(0,0);
+  if(SERVER===false) st.textContent='La lettura automatica dei siti funziona solo con il motore acceso sul computer. Qui online restano ricerca, punteggio e messaggi.';
+  else if(fatti) st.textContent=`Ho letto i siti di ${fatti} attività (le prime in elenco e le prime di ogni tipo): punteggio e messaggi ora tengono conto di cosa dicono.`;
+}
+async function leggiSitoLocale(id,btn){
+  const l=leads[id]; if(!l||!l.web) return;
+  btn.disabled=true; btn.textContent='Leggo il sito...';
+  try{ salvaSitoLocale(id, await chiediSitoLocale(l.web)); l._v=(l._v||0)+1; render(); }
+  catch(e){ btn.disabled=false; btn.textContent=e.message==='NOSERVER'?'Non disponibile online':'Non riuscito: riprova'; }
+}
+
+// ---- attività chiuse (vedi estrai_zona.py): quelle chiuse al registro non sono nei dati.
+// Senza stato al registro, l'unico indizio è l'affidabilità che la fonte dei dati dà all'attività (0-100):
+// i clienti veri ritrovati nei dati stanno tutti tra 87 e 99. Sotto 50 l'attività resta nascosta.
+function pocoAffidabile(l){ return l.stato!=='a' && l.aff!=null && l.aff<50; }
+
+// ---- elenco
+function nascosto(l){ if(GIA.has(l.id)) return 'cliente'; if(pocoAffidabile(l)) return 'dati'; return ''; }
+function filtered(){
+  const q=$('q').value.toLowerCase(), t=$('ftype').value, c=$('fcontact').value, ord=$('fordine').value, tutti=$('fnasc').checked, noGia=$('fgia').checked, dieci=$('fdieci').checked;
+  return Object.values(leads).filter(l=>(tutti||!nascosto(l)) && (!q||(l.nome+' '+l.addr).toLowerCase().includes(q)) && (!t||l.type===t) && (c===''||canale(l)<=+c) && (!noGia||!leadScore(l).gia)
+      && (!dieci||l.type!=='azienda'||leadScore(l).dieci))
+    .sort((a,b)=>{
+      const sa=leadScore(a).lead, sb=leadScore(b).lead;
+      if(ord==='canale') return canale(a)-canale(b) || sb-sa || a.km-b.km;
+      if(ord==='prob') return sb-sa || canale(a)-canale(b) || a.km-b.km;
+      return TYPES[a.type].rango-TYPES[b.type].rango || sb-sa || canale(a)-canale(b) || a.km-b.km;
+    });
+}
+function card(l){
+  const ls=leadScore(l), nasc=nascosto(l);
+  const web=urlSicuro(l.web), soc=urlSicuro(l.soc), mail=mailSicura(l.email);
+  const visti=new Set(), link=u=>{ if(!u) return ''; const e=etichettaLink(u); if(visti.has(e)) return ''; visti.add(e); return `<a target="_blank" rel="noopener noreferrer" href="${esc(u)}">${e}</a>`; };
+  const w=waDi(l), contatti=[...numeri(l).map(n=>`<span>${IC.tel}${esc(fmtTel(n))}${w&&phoneDigits(n)===w.d?' <span class="small">(WhatsApp)</span>':(NO_WA.has(phoneDigits(n))?' <span class="small">(non su WhatsApp)</span>':'')}</span>`), mail?`<span>${IC.mail}${esc(mail)}</span>`:'',
+    ...Object.values((locInfo[l.id]||{}).social||{}).map(urlSicuro).concat([web, soc]).sort((a,b)=>(etichettaLink(a)==='Sito'?0:1)-(etichettaLink(b)==='Sito'?0:1)).map(link)].filter(Boolean).join('');
+  const badge=[`<span class="prio ${ls.classe}">${LS_CLASSI[ls.classe]}</span>`,
+    nasc==='cliente'?'<span class="prio cli">Già tuo cliente</span>':'',
+    nasc==='dati'?'<span class="prio gia" title="Nessuno stato al registro e affidabilità dei dati sotto 50 su 100">Dati poco affidabili</span>':'',
+    ls.gia?`<span class="prio gia" title="Lo dice il suo sito">${(locInfo[l.id]&&(locInfo[l.id].concorrenti||[]).length)?'Nomina '+esc(locInfo[l.id].concorrenti.map(x=>x.replace(/\b\w/g,c=>c.toUpperCase())).join(', ')):'Parla di acqua filtrata'}</span>`:'',
+    ls.catena?'<span class="prio prod">Più sedi</span>':'', ls.stagione?'<span class="prio stag">Stagionale: febbraio-aprile</span>':'',
+    l.type==='azienda' && ls.dimNota ? `<span class="prio stag" title="Lo dice il suo sito">${esc(locInfo[l.id].dipendenti)} dipendenti</span>` : ''].join('');
+  return `<article class="lead" data-lid="${esc(l.id)}">
+    <div class="score ${ls.classe}" title="Punteggio da 0 a 100: da chi partire. È una stima, non una garanzia">${ls.lead}</div>
+    <div>
+      <div class="name">${esc(l.nome)}${badge}</div>
+      <div class="meta">${esc(TYPES[l.type].label)}${l.cat?' <span class="small">('+esc(l.cat)+')</span>':''} · ${l.km} km dal comune cercato${l.addr?' · '+esc(l.addr):''}</div>
+      ${(l.anche||[]).length?`<div class="small">Compare anche come: ${esc(l.anche.slice(0,3).join(', '))}${l.anche.length>3?' e altri '+(l.anche.length-3):''}</div>`:''}
+      <div class="small">${l.stato==='a'?'Risulta attiva nei dati del registro imprese.':'Stato al registro non noto'+(l.aff!=null?' · affidabilità dei dati '+l.aff+'/100':'')+'.'}</div>
+      <div class="proponi small">${esc(cfg.frasi[l.type]||'')}</div>
+      <div class="contacts">${contatti||'<span class="small">Nessun contatto in elenco: usa la mappa.</span>'}</div>
+    </div>
+    <div class="side">
+      <div class="act">${actions(l)}</div>
+      <div class="sub">
+        <a class="lnk" target="_blank" rel="noopener noreferrer" href="https://www.google.com/maps/search/?api=1&query=${l.lat},${l.lon}">Mappa</a>
+        ${l.type==='azienda'?`<a class="lnk" target="_blank" rel="noopener noreferrer" href="https://www.google.com/search?q=${encodeURIComponent('site:ufficiocamerale.it '+l.nome)}" title="La scheda su ufficiocamerale.it riporta i dipendenti (gratis)">Quanti dipendenti?</a>`:''}
+        ${web&&!locInfo[l.id]?`<button class="lnk" data-leggi="${esc(l.id)}">Leggi il suo sito</button>`:''}
+      </div>
+    </div>
+  </article>`;
+}
+function renderSampleMsgs(){
+  const box=$('anamsg'), scelti=[...document.querySelectorAll('#types input:checked')].map(i=>i.value);
+  const vic=CLIENTI.find(c=>c.lat!=null);
+  box._msgs=[];
+  box.innerHTML=scelti.map(k=>{
+    const l={id:'camp:'+k, type:k, nome:'[nome dell\'attività]', comune:'', vicino:vic||null, kmCliente:vic?1:null};
+    const t=msgFor(l); box._msgs.push(t);
+    return `<div class="msgbox"><b>${esc(TYPES[k].label)}</b><div class="t">${esc(t)}</div><button class="ghost" data-copymsg="${box._msgs.length-1}" style="padding:6px 12px">Copia il messaggio</button></div>`;
+  }).join('') || '<div class="small">Scegli almeno un tipo di attività.</div>';
+}
+document.addEventListener('click',async e=>{ const b=e.target.closest('[data-copymsg]'); if(!b) return;
+  try{ await navigator.clipboard.writeText($('anamsg')._msgs[+b.dataset.copymsg]); b.textContent='Copiato'; }catch(err){ b.textContent='Copia a mano dal riquadro'; }
+  setTimeout(()=>b.textContent='Copia il messaggio',2500); });
+function render(){
+  QUOTA=quotaTipi(); QV=JSON.stringify(QUOTA)+'|'+CLIENTI.length;
+  renderSampleMsgs();
+  let nCli=0, nCh=0; Object.values(leads).forEach(l=>{ const h=nascosto(l); if(h==='cliente') nCli++; if(h==='dati') nCh++; });
+  { const parti=[]; if(nCli) parti.push(nCli+(nCli===1?' già tuo cliente':' già tuoi clienti'));
+    if(nCh) parti.push(nCh+' con dati poco affidabili');
+    $('nascosti').style.display=parti.length?'flex':'none'; $('nasctxt').textContent='Nascosti dall\'elenco: '+parti.join(' · ')+'.'; if(!parti.length) $('fnasc').checked=false; }
+  const rows=filtered();
+  $('empty').textContent=rows.length?'':(Object.keys(leads).length?'I filtri nascondono tutte le attività trovate: allargali per rivederle.':emptyMsg);
+  $('empty').style.display=rows.length?'none':'block';
+  $('count').textContent=rows.length?`${rows.length} attività${rows.length>MOSTRA?' · ne vedi '+MOSTRA+', le prime in cima':''}`:'';
+  { const mostra=CERCATO||Object.keys(leads).length>0; ['legenda','barra'].forEach(id=>$(id).style.display=mostra?'':'none'); if(!mostra) $('empty').style.display='none'; }
+  RIGHE=rows.slice(0,MOSTRA);
+  $('altri').innerHTML=rows.length>MOSTRA?`<button class="ghost" id="piu">Mostra altre ${Math.min(30,rows.length-MOSTRA)}</button>`:'';
+  $('rows').innerHTML=RIGHE.map(card).join('');
+}
+$('bfiltra').addEventListener('click',()=>{ const f=$('filtri'); f.hidden=!f.hidden; $('bfiltra').setAttribute('aria-expanded',String(!f.hidden)); });
+['q','ftype','fcontact','fordine','fnasc','fgia','fdieci'].forEach(id=>$(id).addEventListener('input',()=>{ MOSTRA=30; render(); }));
+$('altri').addEventListener('click',e=>{ if(e.target.id==='piu'){ MOSTRA+=30; render(); } });
+$('rows').addEventListener('click',e=>{
+  const b=e.target.closest('[data-leggi]'); if(b) return leggiSitoLocale(b.dataset.leggi,b);
+});
+
+render();
+trovaClienti();
+</script>
+</body>
+</html>
